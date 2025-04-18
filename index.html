@@ -1,0 +1,109 @@
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    padding: 20px;
+    text-align: center;
+  }
+  .converter {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    display: inline-block;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  input, select {
+    padding: 10px;
+    margin: 10px;
+    width: 200px;
+  }
+  #steps {
+    margin-top: 20px;
+    background: #eef;
+    padding: 15px;
+    border-radius: 10px;
+    display: inline-block;
+    text-align: left;
+  }
+</style>
+
+<div class="converter">
+  <h2>Санау жүйесі калькуляторы</h2>
+  <input type="text" id="inputNumber" placeholder="Сан енгізіңіз">
+  <br>
+  <label>Бастапқы жүйе:</label>
+  <select id="fromBase">
+    <option value="2">Екілік (2)</option>
+    <option value="8">Сегіздік (8)</option>
+    <option value="10" selected>Ондық (10)</option>
+    <option value="16">Оналтылық (16)</option>
+  </select>
+  <br>
+  <label>Аудару жүйесі:</label>
+  <select id="toBase">
+    <option value="2">Екілік (2)</option>
+    <option value="8">Сегіздік (8)</option>
+    <option value="10">Ондық (10)</option>
+    <option value="16">Оналтылық (16)</option>
+  </select>
+  <br>
+  <button onclick="convert()">Аудару</button>
+  <h3 id="result">Нәтиже: </h3>
+  <div id="steps"></div>
+</div>
+
+<script>
+  // Калькулятор логикасы — толығымен осында
+  function convert() {
+    const numberStr = document.getElementById("inputNumber").value.trim().toUpperCase();
+    const fromBase = parseInt(document.getElementById("fromBase").value);
+    const toBase = parseInt(document.getElementById("toBase").value);
+    const resultField = document.getElementById("result");
+    const stepsField = document.getElementById("steps");
+
+    try {
+      const decimal = parseInt(numberStr, fromBase);
+      if (isNaN(decimal)) {
+        resultField.textContent = "Қате: Сан жарамсыз.";
+        stepsField.innerHTML = "";
+        stepsField.style.display = "none";
+        return;
+      }
+
+      const converted = decimal.toString(toBase).toUpperCase();
+      resultField.textContent = "Нәтиже: " + converted;
+
+      let explanation = "";
+
+      if (fromBase !== 10) {
+        const digits = numberStr.split('').reverse();
+        let calcSteps = digits.map((digit, i) => {
+          const val = parseInt(digit, fromBase);
+          return `${digit}×${fromBase}<sup>${i}</sup>`;
+        });
+        explanation += `<h4>1) ${fromBase}-жүйеден ондыққа:</h4>`;
+        explanation += `<p>${calcSteps.reverse().join(" + ")} = <b>${decimal}</b></p>`;
+      }
+
+      if (toBase !== 10) {
+        let temp = decimal, steps = [];
+        while (temp > 0) {
+          const q = Math.floor(temp / toBase);
+          const r = temp % toBase;
+          steps.push(`${temp} ÷ ${toBase} = ${q}, қалдығы ${r}`);
+          temp = q;
+        }
+        explanation += `<h4>2) Ондықтан ${toBase}-жүйеге:</h4>`;
+        explanation += `<p>${steps.join("<br>")}<br><b>Нәтиже:</b> ${converted}</p>`;
+      }
+
+      stepsField.innerHTML = explanation;
+      stepsField.style.display = "block";
+
+    } catch (error) {
+      resultField.textContent = "Қате орын алды!";
+      stepsField.innerHTML = "";
+      stepsField.style.display = "none";
+    }
+  }
+</script>
